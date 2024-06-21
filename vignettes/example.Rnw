@@ -1,0 +1,55 @@
+% File src/library/grid/vignettes/grid.Rnw
+% Part of the R package, https://www.R-project.org
+% Copyright 2001-13 Paul Murrell and the R Core Team
+% Distributed under GPL 2 or later
+
+\documentclass[a4paper]{article}
+
+\usepackage{Rd}
+
+% \VignetteIndexEntry{example}
+% \VignettePackage{responseRateAnalysis}
+% \VignetteDepends{lattice}
+
+% Definitions
+\newcommand{\slan}{{\sffamily S}}
+\newcommand{\rlan}{{\sffamily R}}
+\newcommand{\grid}{\pkg{grid}}
+\newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
+\newcommand{\lattice}{\CRANpkg{lattice}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+\title{\responseRateAnalysis{} - A collective effort towards understanding response rates}
+\author{Daniel Heimgartner}
+
+\begin{document}
+
+\maketitle
+
+
+<<echo=FALSE, results=hide>>=
+library(grDevices)
+library(graphics) # for par
+library(stats) # for rnorm
+library(grid)
+ps.options(pointsize = 12)
+options(width = 60)
+@
+Example template inspired by \grid{}.
+
+
+<<fig=TRUE>>=
+x <- rnorm(100)
+y <- x + rnorm(100)
+plot(x, y)
+@
+
+
+\bibliographystyle{plain}
+% \bibliography{grid}
+
+\end{document}

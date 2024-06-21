@@ -7,7 +7,29 @@
 \format{
 Data frame with columns
 \describe{
-\item{...}{TODO.}
+\item{year}{Year when survey was fielded.}
+\item{authors}{Authors.}
+\item{survey_id}{Surveys belonging to the same project should get the same survey_id (used for clustered standard errors).}
+\item{survey_content}{What the survey is all about. If a data paper exists, use the title of the data paper.}
+\item{response_burden_score}{Main variable of interest. Compute this as described in \url{https://doi.org/10.32866/7827}.}
+\item{recruitment}{Were the participants invited/recruited to participate in the survey or were they self-motivated to participate?}
+\item{motivation_call_or_letter}{After (potential) recruitment or initial self-motivated participation, were further motivation efforts (letter or call) made?}
+\item{incentive}{Was an incentive paid?}
+\item{social_network}{Were participants recruited via social network (e.g., friends or family)?}
+\item{response_rate}{100 * (n_completed / sample_size)}
+\item{cooperation_rate}{100 * (n_completed / (n_invited - n_invalid))}
+\item{sample_size}{n_invited minus all contacted that could not participate (for any reason other than unwillingness). (?)}
+\item{n_completed}{Final sample size (all participants that made an effort to conform with the survey flow).}
+\item{n_invited}{Number of invited individuals.}
+\item{n_invalid}{Number of invalid contact details (e.g., wrong address).}
+\item{partial_interviews}{Participant began but did not conclude the survey/interview.}
+\item{refusal_rate}{Not really clear... (?)}
+\item{non_contacts}{Not really clear... What's the difference to n_invalid? (?)}
+\item{other}{Any other reasons for not participating.}
+\item{flag_yes_no}{Recruitment yes, incentive no.}
+\item{flag_yes_yes}{Recruitment yes, incentive yes.}
+\item{flag_no_no}{Recruitment no, incentive no.}
+\item{...}{Check with kwa and/or Basil.}
 }
 }
 \source{

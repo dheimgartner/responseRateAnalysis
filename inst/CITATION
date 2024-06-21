@@ -1,0 +1,13 @@
+citHeader("TBC")
+
+bibentry(
+  bibtype  = "Misc",
+  title    = "A collective effort towards understanding response rates",
+  author   = "D. Heimgartner and K. W. Axhausen",
+  journal  = "",
+  year     = "2024",
+  volume   = "",
+  number   = "",
+  pages    = "",
+  doi      = ""
+)

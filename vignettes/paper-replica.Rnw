@@ -1,0 +1,225 @@
+\documentclass[a4paper]{article}
+
+\usepackage{Rd}
+
+% \VignetteIndexEntry{paper-replica}
+% \VignettePackage{responseRateAnalysis}
+% \VignetteDepends{tidyverse, sandwich, lmtest}
+
+% Definitions
+\newcommand{\slan}{{\sffamily S}}
+\newcommand{\rlan}{{\sffamily R}}
+\newcommand{\grid}{\pkg{grid}}
+\newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
+\newcommand{\lattice}{\CRANpkg{lattice}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+\title{Replicating the stata results}
+\author{Daniel Heimgartner}
+
+\begin{document}
+
+\maketitle
+
+
+<<echo=FALSE, results=hide>>=
+library(responseRateAnalysis)
+library(tidyverse)
+library(sandwich)
+library(lmtest)
+library(kableExtra)
+options(width = 60)
+@
+
+This is an exploratory exercise to replicate the regression results as reported in \cite{axhausen2019predicting}. The key goal is to model response rates as a function of the response burden score (essentially a univariate model). However, there are two complicating factors at play: First, the response rate is bounded between $0$ and $100$ and second, we would like to use clustered standard errors (since distinct survey waves for the same overall study are distinct observations but of course not independent).
+
+\section{Loading the data}
+
+<<data, results=tex>>=
+rr <- response_rates
+
+## similar sample as in paper
+rr <- rr[1:67, ]
+
+rr <-
+  rr %>%
+  select(year, authors, survey_id,
+         response_rate,
+         response_burden_score,
+         sample_size,
+         matches("^flag")) %>%
+  filter(sample_size >= 10)
+
+# head(rr)
+@
+
+\section{First replication attempt}
+
+In the paper they talk about a logistic regression model:
+
+\begin{equation}
+\log{\left( \frac{R_i}{100-R_i} \right)} = \beta_0 + \beta_1 \frac{B_i}{1000} + \varepsilon_i
+\end{equation}
+
+However, I rather think it is a linear regression model with a logistic transformation of the response. Logistic regression in my understanding refers to a model with a logistic link function mapping a latent continuous variable on $[0, 1]$.
+
+Transforming the data and calling \code{lm}:
+
+<<first>>=
+## no weights
+X <-
+  rr %>%
+  mutate(y = log(response_rate / (100 - response_rate)),
+         x = response_burden_score / 1000) %>%
+  mutate(across(matches("^flag"), function(x) as.numeric(x)))
+
+fit <- lm(y ~ 0 + x + flag_no_no + flag_yes_no + flag_yes_yes, data = X)
+summary(fit)
+@
+
+\section{Weighted attempt}
+
+Further, the observations are "weighted". From the stata file I get that the weights are the square root of the sample size (number of respondents):
+
+<<weighted>>=
+## with weights (sqrt(sample_size))
+fit <- lm(y ~ 0 + x + flag_no_no + flag_yes_no + flag_yes_yes,
+          weights = sqrt(sample_size),
+          data = X)
+summary(fit)
+@
+
+The estimates are very close to the ones reported by \cite{axhausen2019predicting}!
+
+Some further computations and comparing to the intercept-only model:
+
+<<intercept-only>>=
+logLik(fit)
+AIC(fit)
+
+## intercept only model
+fit0 <- lm(y ~ 1, data = X, weights = sqrt(sample_size))
+summary(fit0)
+McFadden <- 1 - (logLik(fit) / logLik(fit0))
+as.numeric(McFadden)
+@
+
+\section{Clustered standard errors}
+
+The least square estimates are still ok, but we can't rely on the standard errors if we expect omega to have a block structure (similar errors for different survey waves of the same study):
+
+<<clustered>>=
+## clustered se at the survey level (survey_id)
+## https://www.r-bloggers.com/2021/05/clustered-standard-errors-with-r/
+clustered_se <- lmtest::coeftest(fit, vcov = sandwich::vcovCL, cluster= ~survey_id)
+clustered_se
+
+## alternatively, first compute block omega
+vc_mat <- sandwich::vcovCL(fit, cluster = ~survey_id)
+clustered_se_alt <- lmtest::coeftest(fit, vcov = vc_mat)
+clustered_se_alt  # same as clustered_se
+@
+
+\section{Backtransform the response}
+
+As we have estimated the model on the log-odds, but are interested in the expected response rates, we have to backtransform the response. Be aware that \code{predict(fit, interval = "confidence")} does use the regular standard errors. But that's ok to start with:
+
+<<backtransform>>=
+## backtransform (no clustered se!)
+pred <- as.data.frame(predict(fit, interval = "confidence"))
+
+backtransform <- function(y) {
+  y_star <- exp(y) / (1 + exp(y)) * 100
+  y_star
+}
+
+pred_backtrans <-
+  pred %>%
+  mutate(pred_rr = backtransform(fit),
+         ci_lower = backtransform(lwr),
+         ci_upper = backtransform(upr))
+@
+
+Helper for plotting:
+
+<<plotfun>>=
+plot_fun <- function(data, title) {
+  df <-
+    data %>%
+    select(pred_rr, ci_lower, ci_upper) %>%
+    bind_cols(select(X, response_rate, response_burden_score, matches("flag"))) %>%
+    pivot_longer(matches("flag")) %>%
+    filter(value == 1) %>%
+    mutate(key = factor(name)) %>%
+    select(-name, -value)
+
+  df %>%
+    mutate(key = case_when(key == "flag_no_no" ~ "No, no",
+                           key == "flag_yes_no" ~ "Yes, no",
+                           key == "flag_yes_yes" ~ "Yes, yes")) %>%
+    ggplot(aes(x = response_burden_score, group = key, shape = key, col = key)) +
+    geom_point(aes(y = response_rate)) +
+    geom_line(aes(y = pred_rr), alpha = 0.5, show.legend = FALSE) +
+    geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper, fill = key), alpha = 0.3, show.legend = FALSE) +
+    scale_y_continuous(labels = scales::label_percent(scale = 1)) +
+    scale_color_brewer(type = "qual", palette = 2) +
+    scale_fill_brewer(type = "qual", palette = 2) +
+    labs(x = "Response burden score", y = "Response rate",
+         col = "Recruitment, incentive", shape = "Recruitment, incentive",
+         title = title) +
+    theme(legend.position = c(1, 1),
+          legend.justification = c("right", "top"))
+}
+@
+
+Visualize:
+
+<<plot1, fig=TRUE, width=6, height=5>>=
+plot_fun(pred_backtrans, "Pooled model (conventional standard errors)")
+@
+
+\section{Backtransform with clustered standard errors}
+
+Now let's account for the clustered standard errors even in the confidence intervals:
+
+<<backtransformed-robust, fig=TRUE, width=6, height=5>>=
+## use clustered standard errors in prediction
+pred_cluster_se <- function(fit, vcov) {
+  X <- model.matrix(fit)
+  se <- sqrt(rowSums((X %*% vcov) * X))
+  se
+}
+
+cl_se <- pred_cluster_se(fit, vc_mat)
+cl_pred <-
+  data.frame(fit = predict(fit)) %>%
+  mutate(cl_se = cl_se,
+         ci_lower = fit - 1.96 * cl_se,
+         ci_upper = fit + 1.96 * cl_se)
+
+cl_pred_backtrans <-
+  cl_pred %>%
+  mutate(pred_rr = backtransform(fit),
+         ci_lower = backtransform(ci_lower),
+         ci_upper = backtransform(ci_upper))
+
+plot_fun(cl_pred_backtrans, "Pooled model (clustered standard errors)")
+@
+
+The plots are very similar...
+
+\section{Outlook}
+
+\begin{itemize}
+\item The paper estimates different models for the categories (recruitment x incentive).
+\item Include the most recent surveys. However, the TimeUse+ point that we should use heteroscedastic errors as the error variance for recruitment is yes and incentive is yes increases with the response burden... Also TimeUse+ is a tracking study. How did Caro differentiate between drop-outs because of the response burden vs. tracking?
+\end{itemize}
+
+\bibliographystyle{plain}
+\bibliography{responseRateAnalysis.bib}
+
+\end{document}

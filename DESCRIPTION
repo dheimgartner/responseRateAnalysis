@@ -17,3 +17,11 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Imports: 
+    lmtest,
+    magrittr,
+    sandwich,
+    stringr,
+    texreg,
+    tidyr,
+    tidyselect

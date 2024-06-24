@@ -10,7 +10,7 @@ rr <- readxl::read_xlsx(path)
 
 stop("check range to read in!")
 
-nmax = 77
+nmax = 80
 
 rr <- readxl::read_xlsx(path, n_max = nmax)
 

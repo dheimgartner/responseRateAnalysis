@@ -18,6 +18,7 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Imports: 
+    clubSandwich,
     lmtest,
     magrittr,
     sandwich,

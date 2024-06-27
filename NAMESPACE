@@ -2,5 +2,6 @@
 
 S3method(summary,clustered)
 export("%>%")
+export(default_data)
 importFrom(magrittr,"%>%")
 importFrom(texreg,extract)

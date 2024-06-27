@@ -1,0 +1,189 @@
+\documentclass[a4paper]{article}
+
+\usepackage{Rd}
+
+% kableExtra
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage[utf8]{inputenc}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+% \VignetteIndexEntry{responseRateAnalysis}
+% \VignettePackage{responseRateAnalysis}
+
+% Definitions
+\newcommand{\slan}{{\sffamily S}}
+\newcommand{\rlan}{{\sffamily R}}
+\newcommand{\grid}{\pkg{grid}}
+\newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
+\newcommand{\lattice}{\CRANpkg{lattice}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+\title{\responseRateAnalysis{} - Overview}
+\author{Daniel Heimgartner}
+
+\begin{document}
+
+\maketitle
+
+<<echo=FALSE, results='hide', message=FALSE>>=
+devtools::load_all()
+
+library(tidyverse)
+library(texreg)
+library(kableExtra)
+@
+
+
+<<echo=FALSE, results='hide'>>=
+ps.options(pointsize = 12)
+options(width = 60)
+
+knitr::opts_chunk$set(
+  # background = "white",
+  prompt = TRUE,
+  comment = "#>",
+  highlight = FALSE
+)
+@
+
+The default data can be loaded with \code{default\_data()}. This applies the logistic transformation to the response rate, divides the response burden score by 1000 and defines the weights to be \code{sqrt(sample\_size)}.
+
+<<results='markup'>>=
+dat <- default_data()
+head(dat)
+@
+
+The model is a simple weighted linear regression model with a logistic transformation of the response. We can add clustered standard errors and p-values with the \code{add\_clustered()}. The \code{summary()} generic has a method for class "clustered" (using \code{texreg::screenreg()} under the hood).
+
+<<>>=
+fit <- lm(y ~ 0 + x + yes_yes + yes_no + no_no + no_yes,
+          data = dat, weights = weight)
+m1 <- add_clustered(fit, cluster = dat$survey_id, type = "CR2")
+summary(m1)  # texreg::screenreg(fit_)
+@
+
+Let's estimate separate models for the different categories (recruitment x incentive).
+
+<<>>=
+dat_yes_yes <- subset(dat, yes_yes == 1)
+fit <- lm(formula = y ~ x,
+          data = dat_yes_yes, weights = weight)
+m2 <- add_clustered(fit, cluster = dat_yes_yes$survey_id, type = "CR2")
+
+## helper
+estimator <- function(dat, subset) {
+  dat_ <- subset(dat, subset = subset)
+  fit <- lm(formula = y ~ x,
+            data = dat_, weights = weight)
+  m <- add_clustered(fit, cluster = dat_$survey_id, type = "CR2")
+  m
+}
+
+m3 <- estimator(dat, subset = (dat$yes_no == 1))
+m4 <- estimator(dat, subset = (dat$no_no == 1))
+m5 <- estimator(dat, subset = (dat$no_yes == 1))
+@
+
+Let's compare the results to the findings from the last publication. We essentially repeat the above steps but for a subset of the data.
+
+<<>>=
+dat_last <- subset(dat[1:67, ], sample_size >= 10)
+fit <- lm(y ~ 0 + x + yes_yes + yes_no + no_no + no_yes,
+          data = dat_last, weights = weight)
+m1_last <- add_clustered(fit, cluster = dat_last$survey_id, type = "CR2")
+m2_last <- estimator(dat_last, subset = (dat_last$yes_yes == 1))
+m3_last <- estimator(dat_last, subset = (dat_last$yes_no == 1))
+m4_last <- estimator(dat_last, subset = (dat_last$no_no == 1))
+# m5_last (no no_yes combinations at that time)
+@
+
+We can easily create a regression table with \pkg{texreg}.
+
+<<results='asis'>>=
+m_last <- list(Pooled = m1_last,
+               `Yes, yes` = m2_last,
+               `Yes, no`= m3_last,
+               `No, no` = m4_last)
+texreg::texreg(m_last, caption = "Old models")
+@
+
+<<results='asis'>>=
+m <- list(Pooled = m1,
+          `Yes, yes` = m2,
+          `Yes, no` = m3,
+          `No, no` = m4,
+          `No, yes` = m5)
+texreg::texreg(m, caption = "New models")
+@
+
+Finally, we want to visualize our sample along with the model implied response rate curves.
+
+<<fig.width=5.5, fig.height=4.75>>=
+new_x <- seq(min(dat$x), max(dat$x), by = 0.01)
+newdata <- data.frame(x = new_x)
+
+m_ <- m[2:length(m)]
+p <-
+  map2(m_, names(m_), function(x, y) {
+    p <- as.data.frame(predict(x, newdata = newdata, interval = "confidence"))
+    p$name <- y
+    p
+  })
+df <- reduce(p, rbind)
+
+## backtransform (undo the logit)
+df <-
+  df %>%
+  mutate(across(c(fit, lwr, upr), function(x) backtransform(x)),
+         x = rep(1000 * newdata$x, 4))
+
+survey_data <-
+  dat %>%
+  mutate(yb = backtransform(y),
+         xb = x * 1000) %>%
+  pivot_longer(c(yes_yes, yes_no, no_no, no_yes)) %>%
+  mutate(name = case_when(name == "yes_yes" ~ "Yes, yes",
+                          name == "yes_no" ~ "Yes, no",
+                          name == "no_no" ~ "No, no",
+                          name == "no_yes" ~ "No, yes")) %>%
+  filter(value == 1)
+
+option <- "C"
+df %>%
+  ggplot(aes(x = x, group = name)) +
+  geom_point(aes(x = xb, y = yb, col = name), data = survey_data) +
+  geom_line(aes(y = fit, col = name)) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr, fill = name), alpha = 0.2) +
+  scale_fill_viridis_d(option = option, end = 0.9) +
+  scale_color_viridis_d(option = option, end = 0.9) +
+  labs(x = "Response burden", y = "Response rate [%]",
+       col = "Recruitment, incentive", fill = "Recruitment, incentive") +
+  Heimisc::my_theme() +
+  Heimisc::add_grid() +
+  theme(legend.position = "bottom")
+@
+
+Despite drawing a line through such a point cloud is maybe a little critical and the sparsity of surveys with high response burdens (the ones we have are essentially outliers and influence the curve dramatically!), there is some indication, that any survey beyond 2000 points is just to burdensome for respondents. However, if they were recruited (i.e. agreed to participate) it looks different: Interestingly, there, the incentive seems absolutely essential. Further, the incentive flattens the curve - it will be interesting to compare the slopes of the incentive groups, once we have more data for surveys without a recruitment but with an incentive. However, anecdotal evidence from the TimeUse+ study suggests, that the incentive was important (see pre-test Caro; TRB24?).
+
+
+
+\bibliographystyle{plain}
+% \bibliography{grid}
+
+\end{document}

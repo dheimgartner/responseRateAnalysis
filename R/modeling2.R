@@ -6,6 +6,17 @@ coef_clustered <- function(fit, vcov) {
   lmtest::coeftest(fit, vcov = vcov)
 }
 
+
+#' Add clustered standard errors and p-values
+#'
+#' Will result in an object of class `clustered` (and `lm`).
+#'
+#' @param fit linear model as returned by `lm()`
+#' @param cluster vector which indicates the observations that should be clusterd.
+#' @param type see `?clubSandwhich::vcovCR()`
+#'
+#' @return object of class `c("clustered", "lm")`
+#' @export
 add_clustered <- function(fit, cluster, type) {
   vcov_ <- vcov(fit, cluster = cluster, type = type)
   coef_clustered_ <- coef_clustered(fit = fit, vcov = vcov_)

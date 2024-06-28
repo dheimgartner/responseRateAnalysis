@@ -4,7 +4,7 @@ default_data <- function() {
     "year", "authors", "survey_id", "response_rate", "response_burden_score",
     "sample_size", "flag_yes_yes", "flag_yes_no", "flag_no_no", "flag_no_yes"
   )
-  rr <- response_rates[, keep]
+  rr <- responseRateAnalysis::response_rates[, keep]
   X <-
     rr %>%
     dplyr::mutate(y = log(response_rate / (100 - response_rate)),

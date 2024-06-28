@@ -21,6 +21,8 @@
 
 % \VignetteIndexEntry{responseRateAnalysis}
 % \VignettePackage{responseRateAnalysis}
+% \VignetteEngine{knitr::knitr}
+% \VignetteEncoding{UTF-8}
 
 % Definitions
 \newcommand{\slan}{{\sffamily S}}

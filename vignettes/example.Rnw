@@ -41,6 +41,10 @@ options(width = 60)
 @
 Example template inspired by \grid{}.
 
+<<>>=
+1 + 1
+@
+
 
 <<fig=TRUE>>=
 x <- rnorm(100)

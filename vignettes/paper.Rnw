@@ -1,0 +1,79 @@
+\documentclass[a4paper]{article}
+
+\usepackage{Rd}
+
+% \VignetteIndexEntry{paper}
+% \VignettePackage{responseRateAnalysis}
+%% \VignetteDepends{}
+% \VignetteEngine{knitr::knitr}
+% \VignetteEncoding{UTF-8}
+
+% Definitions
+\newcommand{\slan}{{\sffamily S}}
+\newcommand{\rlan}{{\sffamily R}}
+\newcommand{\grid}{\pkg{grid}}
+\newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
+\newcommand{\lattice}{\CRANpkg{lattice}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+% Packages
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[capitalize]{cleveref}
+\usepackage{enumitem}
+\usepackage{adjustbox}
+\usepackage{multicol}
+\usepackage[ruled]{algorithm2e}
+\usepackage{amssymb}
+
+% kableExtra
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+% Citation style
+\bibliographystyle{ivt-style/ivt-eng}
+
+\title{Replicating the stata results}
+\author{Daniel Heimgartner \& Kay W. Axhausen}
+
+\begin{document}
+
+\maketitle
+
+<<echo=FALSE, results='hide'>>=
+ps.options(pointsize = 12)
+options(width = 60)
+
+knitr::opts_chunk$set(
+  prompt = TRUE,
+  comment = NA,
+  highlight = TRUE
+)
+knitr::knit_theme$set("greyscale0")
+@
+
+\cite{schmid2019predicting}
+
+% Bibliography
+\clearpage
+\bibliography{bib/references}
+
+\end{document}

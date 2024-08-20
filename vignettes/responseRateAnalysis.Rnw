@@ -57,16 +57,16 @@ ps.options(pointsize = 12)
 options(width = 60)
 
 knitr::opts_chunk$set(
-  # background = "white",
   prompt = TRUE,
-  comment = "#>",
-  highlight = FALSE
+  comment = NA,
+  highlight = TRUE
 )
+knitr::knit_theme$set("greyscale0")
 @
 
 The default data can be loaded with \code{default\_data()}. This applies the logistic transformation to the response rate, divides the response burden score by 1000 and defines the weights to be \code{sqrt(sample\_size)}.
 
-<<results='markup'>>=
+<<>>=
 dat <- default_data()
 head(dat)
 @
@@ -117,21 +117,30 @@ m4_last <- estimator(dat_last, subset = (dat_last$no_no == 1))
 
 We can easily create a regression table with \pkg{texreg}.
 
-<<results='asis'>>=
+<<>>=
 m_last <- list(Pooled = m1_last,
                `Yes, yes` = m2_last,
                `Yes, no`= m3_last,
                `No, no` = m4_last)
-texreg::texreg(m_last, caption = "Old models")
+tex <- texreg::texreg(m_last, caption = "Old models")
 @
 
-<<results='asis'>>=
+<<results='asis', echo=FALSE>>=
+tex
+@
+
+
+<<>>=
 m <- list(Pooled = m1,
           `Yes, yes` = m2,
           `Yes, no` = m3,
           `No, no` = m4,
           `No, yes` = m5)
-texreg::texreg(m, caption = "New models")
+tex <- texreg::texreg(m, caption = "New models")
+@
+
+<<results='asis', echo=FALSE>>=
+tex
 @
 
 Finally, we want to visualize our sample along with the model implied response rate curves.

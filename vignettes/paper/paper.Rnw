@@ -2,18 +2,15 @@
 
 \usepackage{Rd}
 
-% \VignetteIndexEntry{paper}
-% \VignettePackage{responseRateAnalysis}
-%% \VignetteDepends{}
-% \VignetteEngine{knitr::knitr}
-% \VignetteEncoding{UTF-8}
-
 % Definitions
 \newcommand{\slan}{{\sffamily S}}
 \newcommand{\rlan}{{\sffamily R}}
 \newcommand{\grid}{\pkg{grid}}
 \newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
 \newcommand{\lattice}{\CRANpkg{lattice}}
+
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\note}[1]{\textcolor{blue}{NOTE: #1}}
 
 \setlength{\parindent}{0in}
 \setlength{\parskip}{.1in}
@@ -51,7 +48,7 @@
 % Citation style
 \bibliographystyle{ivt-style/ivt-eng}
 
-\title{Replicating the stata results}
+\title{Predicting response rates once again}
 \author{Daniel Heimgartner \& Kay W. Axhausen}
 
 \begin{document}
@@ -65,15 +62,44 @@ options(width = 60)
 knitr::opts_chunk$set(
   prompt = TRUE,
   comment = NA,
-  highlight = TRUE
+  highlight = TRUE,
+  fig.align = "center"
 )
 knitr::knit_theme$set("greyscale0")
+options(knitr.kable.NA = "")
 @
 
-\cite{schmid2019predicting}
+<<echo=FALSE, results='hide', message=FALSE>>=
+devtools::load_all()
+
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
+@
+
+<<echo=FALSE>>=
+my_colors <- c("aquamarine3", "darkorange", "blue4", "darkgrey")
+
+convert_flag <- function(x) {
+  flag <- stringr::str_remove(x, "flag_")
+  flag. <- stringr::str_replace_all(flag, "_", ", ")
+  stringr::str_to_title(flag.)
+}
+@
+
+
+<<child="content.Rnw">>=
+@
 
 % Bibliography
 \clearpage
 \bibliography{bib/references}
+
+% Appendix
+\clearpage
+\appendix
+<<child="app.Rnw">>=
+@
+
 
 \end{document}

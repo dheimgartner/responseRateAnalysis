@@ -1,0 +1,418 @@
+% !Rnw root = paper.Rnw
+
+<<include=FALSE>>=
+knitr::opts_knit$set(self.contained=FALSE)
+@
+
+\section{Introduction}
+
+Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes would therefore be encouraged to also contribute (despite the burden of counting response burden). This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful exemplary students got their PhD and left not until the last response burden score of their surveys was counted. Thanks to them, we feel that the time is right to predict response rates once again.
+
+The package can be installed as elaborated below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again. The tutorial nature of this report will hopefully make this no burden whatsoever.
+
+<<eval=FALSE>>=
+devtools::install_github("dheimgartner/responseRateAnalyis")
+@
+
+\note{"Last publication" refers to the \citet{axhausen2019predicting}. The journal publication \citep{schmid2019predicting} is based on only N=47 (see table 3)... But the surveys listed in table 2 contain 65 surveys?? There is something a little weird there.}
+
+\section{Data}
+
+The main data collection effort consists of scoring the survey instruments according to \cref{tab:response_burden_scheme}.
+
+<<echo=FALSE>>=
+tex <-
+  response_burden_scheme %>%
+  mutate(Item = stringr::str_replace_all(Item, "    ", "\\\\hspace{2em}")) %>%
+  kableExtra::kbl(format = "latex",
+                  caption = "Response burden: Points by question type and action",
+                  label = "response_burden_scheme",
+                  booktabs = TRUE,
+                  escape = FALSE) %>%
+  kableExtra::footnote(general = "Based on \\\\textit{Gesellschaft für Sozialforschung (GfS)}, Zürich, 2006 (updated).",
+                       escape = FALSE,
+                       footnote_as_chunk = TRUE,
+                       general_title = "")
+@
+
+<<echo=FALSE, results='asis'>>=
+tex
+@
+
+In comparison to the previous publication \citep{schmid2019predicting}, 14 additional surveys were added by IVT members. A new group (no recruitment but with incentive payments) is now part of the sample. However, only five studies fall in this category. The current state of the database is attached to the package \code{response\_rates} and its variables documented (\code{?response\_rates}). The full sample underlying this report can be found in \cref{tab:full_sample}.
+
+The distribution of the response burden scores (RBS) for the four recruitment and incentive categories are visualized in \cref{fig:response_burden_scores}. The median RBS is 399 and surveys with a score higher than 1`500 are rare (twelve points roughly correspond to a one-minute response time).
+
+\begin{figure}
+<<echo=FALSE, fig.width=3.75, fig.height=3.9, out.width='50%'>>=
+rr <-
+  response_rates %>%
+  select(response_burden_score, response_rate, matches("^flag")) %>%
+  pivot_longer(matches("^flag")) %>%
+  filter(value == 1) %>%
+  mutate(name = convert_flag(name),
+         name = factor(name))
+
+group_counts <- paste0("N=", count(rr, name)[["n"]])
+
+par(mgp = c(2, 1, 0))
+boxplot(response_burden_score ~ name, data = rr,
+        xlab = "Recruitment, incentive", ylab = "Response burden score",
+        cex.lab = 0.7, cex.axis = 0.7)
+mtext(group_counts, side = 3, at = 1:4, cex = 0.7)
+@
+\caption{Distribution of the response burden scores for \textit{recruitment x intentive} categories.}
+\label{fig:response_burden_scores}
+\end{figure}
+
+\section{Methods}
+
+Building on \citet{axhausen2019predicting}, we estimate a logistic regression model relating response burden scores to log-transformed response rates:
+
+\begin{equation}
+\log \left( \frac{y_i}{100 - y_i} \right) = \beta_0 + \beta_1 \frac{x_i}{1000} + \varepsilon_i
+\label{eq:response_burden}
+\end{equation}
+
+where $y_i$ denotes the response rate (in percent), $x_i$ represents the ex-ante response burden score, and $\varepsilon_i$ is a normally distributed clustered error term (similar errors for different survey waves of the same study). Observations were weighted by the square root of the sample size. The model was estimated for the entire sample (excluding surveys with a sample size less than ten) as well as separately for recruitment by incentive category. The exponential $\exp(\beta_1)$ represents a marginal change in odds ratio (i.e., participation vs. non-participation).
+
+If a survey instrument's response burden score increases by 100 points, the odds of participating decrease according to:
+
+\begin{equation}
+\left( \exp \left( \frac{\beta_1}{1000} \right) -1 \right) \cdot 100
+\label{eq:log_odds_decrease}
+\end{equation}
+
+\section{Results}
+
+The basic workflow is as follows:
+
+\begin{enumerate}
+\item \code{default\_data()} loads and prepares the \code{response\_rates} data for estimation. It selects the input variables, computes the weights (\code{sqrt(sample\_size)}), rescales the response burden score (\code{response\_burden\_score / 1000}) and log transforms the response rate (\code{log(response\_rate / (100 - response\_rate))}).
+\item Fit a linear regression model with \code{lm}.
+\item Add clustered standard errors with \code{add\_clustered()} which uses the \pkg{clubSandwich} \citep{clubsandwich} and \pkg{lmtest} package \citep{lmtest} under the hood to correct standard errors and related statistics.
+\end{enumerate}
+
+The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} category), where the category recruited and incentives paid (\textit{yes, yes}) serves as the reference:
+
+<<>>=
+dat <- default_data() %>%
+  filter(sample_size >= 10)  # to be consistent with previous publications
+fit <- lm(y ~ 0 + x + yes_no + no_no + no_yes,  # yes_yes is the reference
+          data = dat, weights = weight)
+m1 <- add_clustered(fit, cluster = dat$survey_id, type = "CR2")
+class(m1)
+@
+
+The functions from the \pkg{texreg} \citep{texreg} package (e.g., \code{screenreg()} or \code{texreg()}) work together with the class \code{"clustered" "lm"} and produce the tables reported in this work.
+
+We repeat the above estimation for different samples, comparing the estimates of the last publication to the updated ones as well as estimate separate models for the four different recruitment and incentive categories. \cref{tab:comparison} summarises the results.
+
+\note{In \citet{schmid2019predicting} you did include a dummy for all three categories in the pooled model (why no reference?).}
+
+<<echo=FALSE>>=
+estimator <- function(dat, subset) {
+  dat_ <- subset(dat, subset = subset)
+  fit <- lm(formula = y ~ x,
+            data = dat_, weights = weight)
+  m <- add_clustered(fit, cluster = dat_$survey_id, type = "CR2")
+  m
+}
+
+m2 <- estimator(dat, subset = (dat$yes_yes == 1))
+m3 <- estimator(dat, subset = (dat$yes_no == 1))
+m4 <- estimator(dat, subset = (dat$no_no == 1))
+m5 <- estimator(dat, subset = (dat$no_yes == 1))
+
+dat_last <- subset(dat[1:67, ], sample_size >= 10)
+fit <- lm(y ~ 0 + x + yes_no + no_no + no_yes,
+          data = dat_last, weights = weight)
+m1_last <- add_clustered(fit, cluster = dat_last$survey_id, type = "CR2")
+m2_last <- estimator(dat_last, subset = (dat_last$yes_yes == 1))
+m3_last <- estimator(dat_last, subset = (dat_last$yes_no == 1))
+m4_last <- estimator(dat_last, subset = (dat_last$no_no == 1))
+## m5_last (no no_yes combinations at that time)
+
+m_last <- list(Pooled = m1_last,
+               `Yes, yes` = m2_last,
+               `Yes, no`= m3_last,
+               `No, no` = m4_last)
+
+## rename coefficients for table output
+rename_coefs <- function(m_list) {
+  m_list_ <-
+    map(m_list, function(x) {
+      if (length(x$coefficients) == 2) {
+        names(x$coefficients) <- c("Intercept", "Response burden")
+      } else {
+        names(x$coefficients) <- c("Response burden", "Yes, no", "No, no", "No, yes")
+      }
+      x
+    })
+  return(m_list_)
+}
+
+m_last <- rename_coefs(m_last)
+
+m <- list(Pooled = m1,
+          `Yes, yes` = m2,
+          `Yes, no` = m3,
+          `No, no` = m4,
+          `No, yes` = m5)
+
+m <- rename_coefs(m)
+
+## combine in one table
+tmp <- m_last
+m_both <- append(m, tmp)
+
+tex <- texreg::texreg(m_both,
+                      booktabs = TRUE,
+                      use.packages = FALSE,
+                      caption.above = TRUE,
+                      custom.header = list("Updated models" = 1:5, "Old models\\dag" = 6:9),
+                      caption = "Logistic regression results: Regressing response burden score on (logit-transformed) response rates",
+                      label = "tab:comparison",
+                      custom.note = "%stars. \\dag Based on the sample of the last publication.",
+                      scalebox = 0.75)
+@
+
+<<echo=FALSE, results='asis'>>=
+tex
+@
+
+For the newly added group (no recruitment but with incentive payments, \textit{no, yes}) the effect of the response burden is not significant, as expected because of limited sample size. Due to the logistic transformation, parameters reflect changes in log-odds when the RBS marginally increases. The effect of response burden is generally more negative than previously expected. The strongest effect can be found for the recruited subsample without incentive payment (\textit{yes, no}), where the odds of participating decrease by -0.297 (i.e., roughly 30\%) according to \cref{eq:log_odds_decrease} if the RBS increases by 100 points. The other comparisons are listed in \cref{tab:pc_odds}.
+
+<<echo=FALSE>>=
+f <- function(b) {
+  (exp(b/1000) - 1) * 100
+}
+
+pc_odds <- function(m) {
+  m %>%
+    map(function(x) {
+      b <- coef(x)[["Response burden"]]
+      100 * f(b)
+    })
+}
+
+pc <- pc_odds(m) %>%
+  as.data.frame() %>%
+  pivot_longer(everything())
+
+pc_last <- pc_odds(m_last) %>%
+  as.data.frame() %>%
+  pivot_longer(everything())
+
+pc_both <- left_join(pc, pc_last, by = "name") %>%
+  mutate(name = stringr::str_replace_all(name, "\\.\\.", ", ")) %>%
+  rename(Category = name, `Updated models [%]` = value.x, `Old models [%]` = value.y)
+
+tex <-
+  pc_both %>%
+  kbl(format = "latex", digits = 2, booktabs = TRUE,
+      caption = "Percentage change in the odds of participating if the response burden score increases by 100 points",
+      label = "pc_odds") %>%
+  kableExtra::kable_styling(font_size = 9)
+@
+
+<<echo=FALSE, results='asis'>>=
+tex
+@
+
+\begin{figure}[h!]
+<<echo=FALSE, message=FALSE, fig.width=8, fig.height=3.8>>=
+new_x <- seq(min(dat$x), max(dat$x), by = 0.01)
+newdata <- data.frame(x = new_x)
+
+m_ <- m[2:length(m)]  # drop pooled model
+p <-
+  map2(m_, names(m_), function(x, y) {
+    p <- as.data.frame(predict(x, newdata = newdata, interval = "confidence"))
+    p$name <- y
+    p
+  })
+df <- reduce(p, rbind)
+
+## backtransform (undo the logit)
+df <-
+  df %>%
+  mutate(across(c(fit, lwr, upr), function(x) backtransform(x)),
+         x = rep(1000 * newdata$x, 4))
+
+survey_data <-
+  dat %>%
+  mutate(yb = backtransform(y),
+         xb = x * 1000) %>%
+  pivot_longer(c(yes_yes, yes_no, no_no, no_yes)) %>%
+  mutate(name = case_when(name == "yes_yes" ~ "Yes, yes",
+                          name == "yes_no" ~ "Yes, no",
+                          name == "no_no" ~ "No, no",
+                          name == "no_yes" ~ "No, yes")) %>%
+  filter(value == 1)
+
+new_surveys <- survey_data[67:nrow(survey_data), ]
+
+p <-
+  df %>%
+  ggplot(aes(x = x, group = name, shape = name)) +
+  geom_point(aes(x = xb, y = yb, col = name), data = survey_data) +
+  geom_point(aes(x = xb, y = yb, col = name), data = new_surveys, size = 5, show.legend = FALSE) +
+  geom_line(aes(y = fit, col = name), linewidth = 1.5) +
+  geom_ribbon(aes(ymin = lwr, ymax = upr, col = name), fill = "grey", linetype = "dashed", alpha = 0.2, show.legend = FALSE) +
+  scale_shape_manual(values = c(15, 16, 17, 18)) +
+  scale_fill_manual(values = my_colors) +
+  scale_color_manual(values = my_colors) +
+  labs(x = "Response burden", y = "Response rate [%]",
+       col = "Recruitment, incentive", linetype = "Recruitment, incentive",
+       shape = "Recruitment, incentive") +
+  ggtitle("All categories") +
+  my_theme() +
+  theme(legend.position = "inside",
+        legend.position.inside = c(1, 1),
+        legend.justification = c(1.05, 1.1),
+        legend.title = element_text(size = rel(0.7)),
+        legend.text = element_text(size = rel(0.6)),
+        legend.key.size = unit(0.3, "cm"),
+        axis.title = element_text(size = rel(1.1)),
+        plot.title = element_text(size = rel(0.9))) +
+  expander() +
+  Heimisc::add_grid(linetype = "solid", linewidth = 0.2) +
+  guides(shape = guide_legend(override.aes = list(linewidth = 1, size = 3), ncol = 2))
+
+## plot by category
+m_last_ <- m_last[2:length(m_last)]
+p_last <-
+  map2(m_last_, names(m_last_), function(x, y) {
+    p <- as.data.frame(predict(x, newdata = newdata, interval = "confidence"))
+    p$name <- y
+    p
+  })
+df_last <- reduce(p_last, rbind)
+
+df_last <-
+  df_last %>%
+  mutate(across(c(fit, lwr, upr), function(x) backtransform(x)),
+         x = rep(1000 * newdata$x, 3))
+
+geom_response <- function(mapping = NULL, data = NULL, col, shade = "grey", lw = 1.5, alpha = 0.2) {
+  list(
+    geom_line(aes(x = x, y = fit), col = col, data = data, linewidth = lw),
+    geom_ribbon(aes(x = x, ymin = lwr, ymax = upr), data = data, col = col, fill = shade, linetype = "dashed", alpha = alpha, show.legend = FALSE)
+  )
+}
+
+plot_by_category <- function(df1, df2, survey_data, cat, col, shape, ylim = c(0, 100)) {
+  e_yy <- filter(df1, name == cat)
+  e_yy_l <- filter(df2, name == cat)
+  sur_dat <- filter(survey_data, name == cat)
+  sur_dat_n <- filter(survey_data[67:nrow(survey_data), ], name == cat)
+
+  caption <- paste0("N = ", nrow(sur_dat), " (", nrow(sur_dat_n), " new)")
+
+  ggplot() +
+    ylim(ylim[1], ylim[2]) +
+    geom_point(aes(x = xb, y = yb), data = sur_dat, size = 1, shape = shape, col = col) +
+    geom_point(aes(x = xb, y = yb), data = sur_dat_n, size = 3, shape = shape, col = col, show.legend = FALSE) +
+    geom_response(data = e_yy_l, col = "deeppink") +
+    geom_response(data = e_yy, col = col) +
+    labs(x = "Response burden", y = "RR [%]") +
+    ggtitle(cat) +
+    my_theme() +
+    theme(plot.title = element_text(size = rel(0.9))) +
+    expander() +
+    Heimisc::add_grid(linetype = "solid", linewidth = 0.2) +
+    annotate("text", x = max(e_yy$x), y = 100, label = caption, hjust = 1.2, vjust = 1.2)
+}
+
+p_yy <- plot_by_category(df, df_last, survey_data, cat = "Yes, yes", shape = 18, col = "darkgrey")
+p_nn <- plot_by_category(df, df_last, survey_data, cat = "No, no", shape = 15, col = "aquamarine3")
+p_yn <- plot_by_category(df, df_last, survey_data, cat = "Yes, no", shape = 17, col = "blue4")
+p_ny <- plot_by_category(df, df_last, survey_data, cat = "No, yes", shape = 16, col = "darkorange")
+
+(p | (p_yy / p_nn) | (p_yn / p_ny)) + patchwork::plot_layout(widths = c(2.5, 1, 1))
+@
+\caption{Response rate curves (response rates as a function of the response burden). The left-hand panel compares the curves for each \textit{recruitment x incentive} category based on the four separately estimated models. The right-hand (smaller) panels compare the response rate curves to the ones based on the data of the previous publication (pink lines). New data points (since the last publication) are enlarged.}
+\label{fig:response_curves}
+\end{figure}
+
+The back-transformed relationship between response burden and response rates (response rate curve) is visualized in \cref{fig:response_curves}, along their confidence intervals (i.e., the shaded area reflects the uncertainty of the curve estimates and is not a prediction interval). Recruitment shifts the curve, while incentives flatten it. Notably, the domain above a response burden score of 2`000 is sparsely populated, and the few observations potentially strongly influence the curve's shape (however, according to \textit{Cook's distance} no influential outliers are present in our data). The results indicate that surveys beyond 2`000 points appear overly burdensome for respondents, sustaining high response rates only through recruitment efforts combined with incentive payments, intensive care of the respondents and general interest in the topic of these intense studies.
+
+Generally, the 14 new data points do not dramatically change the overall shape of the curves (\cref{fig:response_curves}, RHS), but the curves are slightly steeper as explained based on the parameter estimates. \textit{Yes, yes} is almost identical (only two new data points were added). For \textit{no, no} the confidence bounds increased because two of the five added surveys have unprecedented high response rates. For the category \textit{yes, no} the function has gained support for higher response burdens which substantially steepened the curve and reduced its uncertainty. In particular, we now have higher confidence that the curve quickly joins the other response curves on the domain above 1`500 response burden points. I.e., recruitment without incentive payments only matters for surveys with low response burden (but can make a big difference there).
+
+\subsection*{Adding a linear time-trend}
+
+Similar to \citet{schmid2019predicting}, we can add a linear time-trend with the year 2004 (when the survey scoring effort started) serving as the base. The following code shows the trivial addition of the time-trend to the pooled model.
+
+<<results='hide'>>=
+dat$year <- dat$year - 2004
+
+fit_t <- fit_t <- lm(y ~ 0 + x + yes_no + no_no + no_yes + year,
+                     data = dat, weights = weight)
+
+mt <- add_clustered(fit_t, cluster = dat$survey_id, type = "CR2")
+@
+
+We repeat the steps for the individual categories and synthesise the results in a table (\cref{tab:time_trend}). In contrast to \citet{schmid2019predicting} we do not find a negative time-trend and therefore do not support the hypothesis of a general fatigue and less willingness to participate in our surveys.
+
+<<echo=FALSE, results='hide'>>=
+estimator <- function(dat, subset) {
+  dat_ <- subset(dat, subset = subset)
+  fit <- lm(formula = y ~ x + year,
+            data = dat_, weights = weight)
+  m <- add_clustered(fit, cluster = dat_$survey_id, type = "CR2")
+  m
+}
+
+rename_coefs <- function(m_list) {
+  m_list_ <-
+    map(m_list, function(x) {
+      if (length(x$coefficients) == 3) {
+        names(x$coefficients) <- c("Intercept", "Response burden", "Time-trend")
+      } else {
+        names(x$coefficients) <- c("Response burden", "Yes, no", "No, no", "No, yes", "Time-trend")
+      }
+      x
+    })
+  return(m_list_)
+}
+
+mt2 <- estimator(dat, subset = (dat$yes_yes == 1))
+mt3 <- estimator(dat, subset = (dat$yes_no == 1))
+mt4 <- estimator(dat, subset = (dat$no_no == 1))
+mt5 <- estimator(dat, subset = (dat$no_yes == 1))
+
+m_time <- list(Pooled = mt,
+               `Yes, yes` = mt2,
+               `Yes, no`= mt3,
+               `No, no` = mt4,
+               `No, yes` = mt5)
+
+m_time <- rename_coefs(m_time)  # helper to rename coefs for output
+
+m_both <- append(m, m_time)
+
+tex <- texreg::texreg(m_both,
+                      booktabs = TRUE,
+                      use.packages = FALSE,
+                      caption.above = TRUE,
+                      custom.header = list("No time-trend" = 1:5, "With time-trend" = 6:10),
+                      caption = "Logistic regression results: Adding a linear time-trend",
+                      label = "tab:time_trend",
+                      custom.note = "%stars.",
+                      scalebox = 0.72)
+@
+
+<<echo=FALSE, results='asis'>>=
+tex
+@
+
+\section{Limitations and future research}
+
+\begin{itemize}
+\item Response burden scores should be treated as random (i.e., feature measurement errors) since the assignment of response burden scores according to \cref{tab:response_burden_scheme} is not always clear. The modeling approach would need to be adjusted accordingly.
+\item The form and value of the incentive should be considered (currently we only know whether or not an incentive had been paid).
+\item While we checked for influential data points consulting \textit{Cook's distance} (which did not indicate any outliers), there are only few observations with response burden scores higher than 2`000 points.
+\item We hope that other research groups join the effort to collect response burden scores such that our insights can be generalized to other institutions, domains and countries.
+\end{itemize}
+

@@ -1,4 +1,6 @@
-# responseRateAnalysis (development version)
+# responseRateAnalysis 0.0.0.9002
+
+- First paper draft
 
 # responseRateAnalysis 0.0.0.9001
 

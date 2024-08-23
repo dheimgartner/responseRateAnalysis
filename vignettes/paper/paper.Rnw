@@ -2,6 +2,12 @@
 
 \usepackage{Rd}
 
+% \VignetteIndexEntry{paper}
+% \VignettePackage{responseRateAnalysis}
+% \VignetteDepends{tidyverse, patchwork, kableExtra}
+% \VignetteEngine{knitr::knitr}
+% \VignetteEncoding{UTF-8}
+
 % Definitions
 \newcommand{\slan}{{\sffamily S}}
 \newcommand{\rlan}{{\sffamily R}}

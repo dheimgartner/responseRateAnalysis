@@ -10,6 +10,7 @@
 % \VignetteIndexEntry{example}
 % \VignettePackage{responseRateAnalysis}
 % \VignetteDepends{lattice}
+% \VignetteEncoding{UTF-8}
 
 % Definitions
 \newcommand{\slan}{{\sffamily S}}

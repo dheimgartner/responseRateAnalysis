@@ -5,6 +5,7 @@
 % \VignetteIndexEntry{paper-replica}
 % \VignettePackage{responseRateAnalysis}
 % \VignetteDepends{tidyverse, sandwich, lmtest}
+% \VignetteEncoding{UTF-8}
 
 % Definitions
 \newcommand{\slan}{{\sffamily S}}

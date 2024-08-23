@@ -1,6 +1,6 @@
 Package: responseRateAnalysis
 Title: A collective effort towards understanding response rates
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     person("Daniel", "Heimgartner", , "daniel.heimgartner@ivt.baug.ethz.ch", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0643-8690"))

@@ -1,4 +1,4 @@
-% !Rnw root = paper.Rnw
+% !Rnw root = ../paper.Rnw
 
 <<include=FALSE>>=
 knitr::opts_knit$set(self.contained=FALSE)

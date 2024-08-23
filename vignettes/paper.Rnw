@@ -52,7 +52,7 @@
 \usepackage{xcolor}
 
 % Citation style
-\bibliographystyle{ivt-style/ivt-eng}
+\bibliographystyle{paper/ivt-style/ivt-eng}
 
 \title{Predicting response rates once again}
 \author{Daniel Heimgartner \& Kay W. Axhausen}
@@ -94,17 +94,17 @@ convert_flag <- function(x) {
 @
 
 
-<<child="content.Rnw">>=
+<<child="paper/content.Rnw">>=
 @
 
 % Bibliography
 \clearpage
-\bibliography{bib/references}
+\bibliography{paper/bib/references}
 
 % Appendix
 \clearpage
 \appendix
-<<child="app.Rnw">>=
+<<child="paper/app.Rnw">>=
 @
 
 

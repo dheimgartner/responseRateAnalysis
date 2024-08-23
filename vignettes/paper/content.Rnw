@@ -174,7 +174,8 @@ tex <- texreg::texreg(m_both,
                       caption = "Logistic regression results: Regressing response burden score on (logit-transformed) response rates",
                       label = "tab:comparison",
                       custom.note = "%stars. \\dag Based on the sample of the last publication.",
-                      scalebox = 0.75)
+                      scalebox = 0.75,
+                      float.pos = "h!")
 @
 
 <<echo=FALSE, results='asis'>>=
@@ -212,7 +213,8 @@ tex <-
   pc_both %>%
   kbl(format = "latex", digits = 2, booktabs = TRUE,
       caption = "Percentage change in the odds of participating if the response burden score increases by 100 points",
-      label = "pc_odds") %>%
+      label = "pc_odds",
+      position = "h!") %>%
   kableExtra::kable_styling(font_size = 9)
 @
 
@@ -400,7 +402,8 @@ tex <- texreg::texreg(m_both,
                       caption = "Logistic regression results: Adding a linear time-trend",
                       label = "tab:time_trend",
                       custom.note = "%stars.",
-                      scalebox = 0.72)
+                      scalebox = 0.72,
+                      float.pos = "h!")
 @
 
 <<echo=FALSE, results='asis'>>=

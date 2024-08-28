@@ -6,15 +6,13 @@ knitr::opts_knit$set(self.contained=FALSE)
 
 \section{Introduction}
 
-Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes would therefore be encouraged to also contribute (despite the burden of counting response burden). This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful exemplary students got their PhD and left not until the last response burden score of their surveys was counted. Thanks to them, we feel that the time is right to predict response rates once again.
+Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes might therefore be encouraged to also contribute (despite the burden of counting response burden). This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful students left not until the final response burden score of their surveys was counted. Thanks to them, we feel that the time is right to update response rates once again.
 
-The package can be installed as elaborated below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again. The tutorial nature of this report will hopefully make this no burden whatsoever.
+The \rlan-package can be installed as explained below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again. The tutorial nature of this report will hopefully make this no burden whatsoever.
 
 <<eval=FALSE>>=
 devtools::install_github("dheimgartner/responseRateAnalyis")
 @
-
-\note{"Last publication" refers to the \citet{axhausen2019predicting}. The journal publication \citep{schmid2019predicting} is based on only N=47 (see table 3)... But the surveys listed in table 2 contain 65 surveys?? There is something a little weird there.}
 
 \section{Data}
 
@@ -39,7 +37,7 @@ tex <-
 tex
 @
 
-In comparison to the previous publication \citep{schmid2019predicting}, 14 additional surveys were added by IVT members. A new group (no recruitment but with incentive payments) is now part of the sample. However, only five studies fall in this category. The current state of the database is attached to the package \code{response\_rates} and its variables documented (\code{?response\_rates}). The full sample underlying this report can be found in \cref{tab:full_sample}.
+In comparison to the previous publication \citep{schmid2019predicting}, 14 additional surveys were added by IVT members. A new category (no recruitment but with incentive payments) can now be distinguished. However, only five studies fall in this category. The current state of the database is attached to the package \code{response\_rates} and its variables documented (\code{?response\_rates}). The full sample underlying this report can be found in \cref{tab:full_sample}.
 
 The distribution of the response burden scores (RBS) for the four recruitment and incentive categories are visualized in \cref{fig:response_burden_scores}. The median RBS is 399 and surveys with a score higher than 1`500 are rare (twelve points roughly correspond to a one-minute response time).
 
@@ -94,7 +92,7 @@ The basic workflow is as follows:
 \item The functions from the \pkg{texreg} \citep{texreg} package (e.g., \code{screenreg()} or \code{texreg()}) work together with the class \code{"clustered" "lm"} (as returned by \code{add\_clustered()}) and produce regression tables (such as the ones reported in this work).
 \end{enumerate}
 
-The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} category), where the category recruited and incentives paid (\textit{yes, yes}) serves as the reference:
+The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} category):
 
 <<>>=
 dat <- default_data() %>%
@@ -219,7 +217,7 @@ tex <-
 tex
 @
 
-\begin{figure}[h!]
+\begin{figure}
 <<echo=FALSE, message=FALSE, fig.width=8, fig.height=3.8>>=
 new_x <- seq(min(dat$x), max(dat$x), by = 0.01)
 newdata <- data.frame(x = new_x)
@@ -294,7 +292,7 @@ df_last <-
   mutate(across(c(fit, lwr, upr), function(x) backtransform(x)),
          x = rep(1000 * newdata$x, 3))
 
-geom_response <- function(mapping = NULL, data = NULL, col, shade = "grey", lw = 1.5, alpha = 0.2) {
+geom_response <- function(mapping = NULL, data = NULL, col, shade = "grey", lw = 1, alpha = 0.2) {
   list(
     geom_line(aes(x = x, y = fit), col = col, data = data, linewidth = lw),
     geom_ribbon(aes(x = x, ymin = lwr, ymax = upr), data = data, col = col, fill = shade, linetype = "dashed", alpha = alpha, show.legend = FALSE)
@@ -313,7 +311,7 @@ plot_by_category <- function(df1, df2, survey_data, cat, col, shape, ylim = c(0,
     ylim(ylim[1], ylim[2]) +
     geom_point(aes(x = xb, y = yb), data = sur_dat, size = 1, shape = shape, col = col) +
     geom_point(aes(x = xb, y = yb), data = sur_dat_n, size = 3, shape = shape, col = col, show.legend = FALSE) +
-    geom_response(data = e_yy_l, col = "deeppink") +
+    geom_response(data = e_yy_l, col = "deeppink", lw = 1.5) +
     geom_response(data = e_yy, col = col) +
     labs(x = "Response burden", y = "RR [%]") +
     ggtitle(cat) +

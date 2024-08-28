@@ -9,6 +9,13 @@
 % \VignetteEngine{knitr::knitr}
 % \VignetteEncoding{UTF-8}
 
+% Definitions
+\newcommand{\slan}{{\sffamily S}}
+\newcommand{\rlan}{{\sffamily R}}
+\newcommand{\grid}{\pkg{grid}}
+\newcommand{\responseRateAnalysis}{\pkg{responseRateAnalysis}}
+\newcommand{\lattice}{\CRANpkg{lattice}}
+
 % Set page size and margins
 % Replace `letterpaper' with`a4paper' for UK/EU standard size
 \usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
@@ -62,8 +69,36 @@
 \usepackage{array}
 \usepackage{pdfpages}
 
-\title{Title of the Article in Title Case}
-\author{Author 1, Author 2, ... Author N}
+% Added by me
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[capitalize]{cleveref}
+\usepackage{enumitem}
+\usepackage{adjustbox}
+\usepackage{multicol}
+\usepackage[ruled]{algorithm2e}
+\usepackage{amssymb}
+
+% kableExtra
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+
+\title{Predicting Response Rates Once Again}
+\author{Daniel Heimgartner \& Kay W. Axhausen}
 \date{\today}
 
 \begin{document}
@@ -83,14 +118,40 @@ knitr::knit_theme$set("greyscale0")
 options(knitr.kable.NA = "")
 @
 
-<<child="findings/content.Rnw">>=
+<<echo=FALSE, results='hide', message=FALSE>>=
+devtools::load_all()
+
+library(tidyverse)
+library(patchwork)
+library(kableExtra)
 @
 
+<<echo=FALSE>>=
+my_colors <- c("aquamarine3", "darkorange", "blue4", "darkgrey")
+
+convert_flag <- function(x) {
+  flag <- stringr::str_remove(x, "flag_")
+  flag. <- stringr::str_replace_all(flag, "_", ", ")
+  stringr::str_to_title(flag.)
+}
+@
+
+<<child="findings/content.Rnw">>=
+@
 
 %%%%%%%%%%%%%%%%%%%%
 % REFERENCES
 %%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{chicago}
 \bibliography{findings/bibliography.bib}
+
+%%%%%%%%%%%%%%%%%%%%
+% Appendix
+%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\appendix
+<<child="findings/app.Rnw">>=
+@
+
 
 \end{document}

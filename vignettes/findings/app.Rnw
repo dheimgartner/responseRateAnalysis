@@ -1,0 +1,29 @@
+% !Rnw root = ../findings.Rnw
+
+<<include=FALSE>>=
+knitr::opts_knit$set(self.contained=FALSE)
+@
+
+\section{Full data sample}
+\label{appendix}
+
+<<>>=
+rr <-
+  response_rates %>%
+  select(year, survey_content, sample_size, response_burden_score, response_rate)
+
+names(rr) <- c("Year", "Study", "Sample size", "Burden score",
+               "Response rate [%]")
+
+tex <- kableExtra::kbl(rr, format = "latex",
+                       caption = "Updated response burden scores",
+                       label = "full_sample", digits = 0,
+                       longtable = TRUE,
+                       booktabs = TRUE) %>%
+  kableExtra::kable_styling(latex_options = c("repeat_header")) %>%
+  kableExtra::landscape()
+@
+
+<<echo=FALSE, results='asis'>>=
+tex
+@

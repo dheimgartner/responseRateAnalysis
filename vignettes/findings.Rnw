@@ -98,8 +98,11 @@
 \usepackage{xcolor}
 
 \title{Predicting Response Rates Once Again}
-\author{Daniel Heimgartner \& Kay W. Axhausen}
-\date{\today}
+\author{Daniel Heimgartner$^\dag$ \& Kay W. Axhausen$^\dag$}
+\date{%
+  $^\dag$Institute for Transport Planning and Systems, ETH Zurich\\[2ex]%
+  \today
+}
 
 \begin{document}
 \maketitle

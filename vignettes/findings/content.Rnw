@@ -1,0 +1,96 @@
+% !Rnw root = ../findings.Rnw
+
+<<include=FALSE>>=
+knitr::opts_knit$set(self.contained=FALSE)
+@
+
+%%%%%%%%%%%%%%%%%%%%
+% ABSTRACT
+%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+
+Abstract here, but also in the web form.
+
+Papers should be focused and to the point, and not begin with trite observations like “Congestion is a problem the world over.” Usually you can delete your opening paragraph if it begins like that, and the reader is no worse off. As Strunk and White say: ``Omit Needless Words.'' The \textit{Abstract} should not say the same thing as the \textit{Questions}.
+
+Abstracts are a maximum of 100 words.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%
+% KEYWORDS
+%%%%%%%%%%%%%%%%%%%%
+\textit{Keywords:} Keywords here, but also in the webform.
+
+
+%%%%%%%%%%%%%%%%%%%%
+% QUESTIONS
+%%%%%%%%%%%%%%%%%%%%
+\section{Questions}
+The text is in 3 sections, with a total of 1000 words. You should cite articles with the citep command like this: \citep{bell2008attacker}.
+
+This section includes \textit{research questions} and \textit{hypotheses} addressed in the article.
+
+Before writing a paper for \textit{Findings}, please review: \url{https://findingspress.org/for-authors}
+
+%%%%%%%%%%%%%%%%%%%%
+% METHODS
+%%%%%%%%%%%%%%%%%%%%
+\section{Methods}
+
+This section describes the methods and data used in the article.
+
+
+%%%%%%%%%%%%%%%%%%%%
+% FINDINGS
+%%%%%%%%%%%%%%%%%%%%
+\section{Findings}
+
+This section describes the results of what you found.
+
+There shall be no introduction, `road-map paragraph,' literature review, conclusions, speculations, or policy implications beyond what is included above. Focus on what you found, not why you found it.
+
+You may include up to 3 tables and 3 figures in the paper.
+
+%\subsection{Figures}
+The figures should be created as high-resolution JPEG files, and those files should be uploaded when you upload your paper, they should be referenced and numbered consistently, and should appear in the order they appear in the text, e.g. \ref{fig:JPEGExample}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{findings/Findings.jpeg}
+    \caption{An example of a JPEG image, this one of the \textit{Findings Press} logo.}
+    \label{fig:JPEGExample}
+\end{figure}
+
+Creation as vector graphics before converting to JPEG is preferred for charts and maps, to allow zooming without loss of information or blurriness.
+
+All graphs shall have their axes labeled, clearly, with units as appropriate.
+
+Legends and scales shall be as consistent as possible between graphics, so that they can be compared.
+
+All maps shall have legends and scales and north shall be on top (unless stated otherwise).
+
+%\subsection{Tables}
+All tables shall be provided in an editable format
+
+Complex tables which may be hard to typeset in HTML may also be uploaded as separate figures.
+
+The tables should be standard LaTeX tables, as shown in \ref{tab:TableExample}.
+
+
+\begin{table}
+    \centering
+    \begin{tabular}{ccc}
+         & Column 1 & Column 2 \\
+    Row 1     & 1 & 2 \\
+    Row 2     & 3 & 4 \\
+    \end{tabular}
+    \caption{Example Table}
+    \label{tab:TableExample}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%
+% ACKNOWLEDGEMENTS
+%%%%%%%%%%%%%%%%%%%%
+\section{Acknowledgements}
+
+Here you identify anyone who helped along the way, including providers of data if not cited, who is not a co-author.

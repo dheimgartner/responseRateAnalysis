@@ -91,6 +91,6 @@ options(knitr.kable.NA = "")
 % REFERENCES
 %%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{chicago}
-\bibliography{findings/bibliography}
+\bibliography{findings/bibliography.bib}
 
 \end{document}

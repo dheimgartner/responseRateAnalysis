@@ -8,18 +8,13 @@ knitr::opts_knit$set(self.contained=FALSE)
 % ABSTRACT
 %%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-
-Abstract here, but also in the web form.
-
-Papers should be focused and to the point, and not begin with trite observations like “Congestion is a problem the world over.” Usually you can delete your opening paragraph if it begins like that, and the reader is no worse off. As Strunk and White say: ``Omit Needless Words.'' The \textit{Abstract} should not say the same thing as the \textit{Questions}.
-
-Abstracts are a maximum of 100 words.
+We investigate the relation between a survey's response burden and response rate, differentiating recruitment efforts and incentives paid. The results indicate that the effect of response burden is more negative than previously expected. Recruitment shifts the response curve upwards, while incentives flatten it. Surveys beyond 2`000 points appear overly burdensome, sustaining high response rates only through recruitment coupled with incentives. Without incentives, the level effect of recruitment quickly vanishes. Contrary to previous findings, we can not identify a negative time-trend. The data, functions and workflow underlying this analysis are organized as an \rlan-package to foster a collective effort towards understanding response rates.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%
 % KEYWORDS
 %%%%%%%%%%%%%%%%%%%%
-\textit{Keywords:} Keywords here, but also in the webform.
+\textit{Keywords:} predicting, measurement, rating, survey instruments, response burden, response rate
 
 
 %%%%%%%%%%%%%%%%%%%%
@@ -27,9 +22,9 @@ Abstracts are a maximum of 100 words.
 %%%%%%%%%%%%%%%%%%%%
 \section{Questions}
 
-Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes might therefore be encouraged to also contribute (despite the burden of counting response burden). This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful students left not until the final response burden score of their surveys was counted. Thanks to them, we feel that the time is right to update response rates once again.
+Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes might therefore be encouraged to also contribute. This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful students left not until the final response burden score of their surveys was counted. Thanks to them, we feel that the time is right to update response rates once again.
 
-The \rlan-package can be installed as explained below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again. The tutorial nature of this report will hopefully make this no burden whatsoever.
+The main purpose of this paper is to replicate the analysis, update the estimates based on the enlarged sample and to make the analysis easily replicable: The \rlan-package can be installed as explained below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again. The tutorial nature of this report will hopefully make this no burden whatsoever.
 
 <<eval=FALSE>>=
 devtools::install_github("dheimgartner/responseRateAnalyis")
@@ -117,7 +112,7 @@ The basic workflow is as follows:
 %%%%%%%%%%%%%%%%%%%%
 \section{Findings}
 
-The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} category):
+The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} categories):
 
 <<>>=
 dat <- default_data() %>%
@@ -434,4 +429,4 @@ tex
 %%%%%%%%%%%%%%%%%%%%
 \section{Acknowledgements}
 
-Here you identify anyone who helped along the way, including providers of data if not cited, who is not a co-author.
+We would like to thank all the students scoring the survey instruments and contributing to the data underlying this analysis.

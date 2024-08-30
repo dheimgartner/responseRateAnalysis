@@ -64,11 +64,10 @@ The distribution of the response burden scores (RBS) for the four recruitment (R
 <<echo=FALSE, fig.width=3.75, fig.height=3.9, out.width='50%'>>=
 rr <-
   response_rates %>%
-  select(response_burden_score, response_rate, matches("^flag")) %>%
-  pivot_longer(matches("^flag")) %>%
+  select(response_burden_score, response_rate, all_of(cat_cols)) %>%
+  pivot_longer(all_of(cat_cols)) %>%
   filter(value == 1) %>%
-  mutate(name = convert_flag(name),
-         name = factor(name))
+  mutate(name = factor(name, levels = cat_cols))
 
 group_counts <- paste0("N=", count(rr, name)[["n"]])
 
@@ -117,7 +116,7 @@ The following code conducts the analysis for the full sample (i.e., same slope b
 <<>>=
 dat <- default_data() %>%
   filter(sample_size >= 10)  # to be consistent with previous publications
-fit <- lm(y ~ 0 + x + yes_yes + yes_no + no_no + no_yes,
+fit <- lm(y ~ 0 + x + RxI + RxNI + NRxI + NRxNI,
           data = dat, weights = weight)
 m1 <- add_clustered(fit, cluster = dat$survey_id, type = "CR2")
 class(m1)
@@ -134,24 +133,24 @@ estimator <- function(dat, subset) {
   m
 }
 
-m2 <- estimator(dat, subset = (dat$yes_yes == 1))
-m3 <- estimator(dat, subset = (dat$yes_no == 1))
-m4 <- estimator(dat, subset = (dat$no_no == 1))
-m5 <- estimator(dat, subset = (dat$no_yes == 1))
+m2 <- estimator(dat, subset = (dat$RxI == 1))
+m3 <- estimator(dat, subset = (dat$RxNI == 1))
+m4 <- estimator(dat, subset = (dat$NRxI == 1))
+m5 <- estimator(dat, subset = (dat$NRxNI == 1))
 
 dat_last <- subset(dat[1:67, ], sample_size >= 10)
-fit <- lm(y ~ 0 + x + yes_yes + yes_no + no_no + no_yes,
+fit <- lm(y ~ 0 + x + RxI + RxNI + NRxI + NRxNI,
           data = dat_last, weights = weight)
 m1_last <- add_clustered(fit, cluster = dat_last$survey_id, type = "CR2")
-m2_last <- estimator(dat_last, subset = (dat_last$yes_yes == 1))
-m3_last <- estimator(dat_last, subset = (dat_last$yes_no == 1))
-m4_last <- estimator(dat_last, subset = (dat_last$no_no == 1))
-## m5_last (no no_yes combinations at that time)
+m2_last <- estimator(dat_last, subset = (dat_last$RxI == 1))
+m3_last <- estimator(dat_last, subset = (dat_last$RxNI == 1))
+# m4_last <- estimator(dat_last, subset = (dat_last$NRxI == 1))  # not available
+m5_last <- estimator(dat_last, subset = (dat_last$NRxNI ==  1))
 
 m_last <- list(Pooled = m1_last,
-               `Yes, yes` = m2_last,
-               `Yes, no`= m3_last,
-               `No, no` = m4_last)
+               `RxI` = m2_last,
+               `RxNI`= m3_last,
+               `NRxNI` = m5_last)
 
 ## rename coefficients for table output
 rename_coefs <- function(m_list) {
@@ -160,7 +159,7 @@ rename_coefs <- function(m_list) {
       if (length(x$coefficients) == 2) {
         names(x$coefficients) <- c("Intercept", "Response burden")
       } else {
-        names(x$coefficients) <- c("Response burden", "Yes, yes", "Yes, no", "No, no", "No, yes")
+        names(x$coefficients)[1] <- "Response burden"
       }
       x
     })
@@ -170,10 +169,10 @@ rename_coefs <- function(m_list) {
 m_last <- rename_coefs(m_last)
 
 m <- list(Pooled = m1,
-          `Yes, yes` = m2,
-          `Yes, no` = m3,
-          `No, no` = m4,
-          `No, yes` = m5)
+          `RxI` = m2,
+          `RxNI` = m3,
+          `NRxI` = m4,
+          `NRxNI` = m5)
 
 m <- rename_coefs(m)
 
@@ -261,11 +260,7 @@ survey_data <-
   dat %>%
   mutate(yb = backtransform(y),
          xb = x * 1000) %>%
-  pivot_longer(c(yes_yes, yes_no, no_no, no_yes)) %>%
-  mutate(name = case_when(name == "yes_yes" ~ "Yes, yes",
-                          name == "yes_no" ~ "Yes, no",
-                          name == "no_no" ~ "No, no",
-                          name == "no_yes" ~ "No, yes")) %>%
+  pivot_longer(all_of(cat_cols)) %>%
   filter(value == 1)
 
 new_surveys <- survey_data[67:nrow(survey_data), ]
@@ -342,12 +337,12 @@ plot_by_category <- function(df1, df2, survey_data, cat, col, shape, ylim = c(0,
     annotate("text", x = max(e_yy$x), y = 100, label = caption, hjust = 1.2, vjust = 1.2)
 }
 
-p_yy <- plot_by_category(df, df_last, survey_data, cat = "Yes, yes", shape = 18, col = "darkgrey")
-p_nn <- plot_by_category(df, df_last, survey_data, cat = "No, no", shape = 15, col = "aquamarine3")
-p_yn <- plot_by_category(df, df_last, survey_data, cat = "Yes, no", shape = 17, col = "blue4")
-p_ny <- plot_by_category(df, df_last, survey_data, cat = "No, yes", shape = 16, col = "darkorange")
+p_yy <- plot_by_category(df, df_last, survey_data, cat = "RxI", shape = 18, col = "darkgrey")
+p_nn <- plot_by_category(df, df_last, survey_data, cat = "NRxNI", shape = 15, col = "aquamarine3")
+p_yn <- plot_by_category(df, df_last, survey_data, cat = "RxNI", shape = 17, col = "blue4")
+p_ny <- plot_by_category(df, df_last, survey_data, cat = "NRxI", shape = 16, col = "darkorange")
 
-(p | (p_yy / p_nn) | (p_yn / p_ny)) + patchwork::plot_layout(widths = c(2.5, 1, 1))
+(p | (p_yy / p_ny) | (p_yn / p_nn)) + patchwork::plot_layout(widths = c(2.5, 1, 1))
 @
 \caption{Response rate curves (response rates as a function of the response burden). The left-hand panel compares the curves for each \textit{recruitment x incentive} category based on the four separately estimated models. The right-hand (smaller) panels compare the response rate curves to the ones based on the data of the previous publication (pink lines). New data points (since the last publication) are enlarged.}
 \label{fig:response_curves}
@@ -362,7 +357,7 @@ Similar to \citet{schmid2019predicting}, we can add a linear time-trend with the
 <<results='hide'>>=
 dat$year <- dat$year - 2004
 
-fit_t <- fit_t <- lm(y ~ 0 + x + yes_yes + yes_no + no_no + no_yes + year,
+fit_t <- fit_t <- lm(y ~ 0 + x + RxI + RxNI + NRxI + NRxNI + year,
                      data = dat, weights = weight)
 
 mt <- add_clustered(fit_t, cluster = dat$survey_id, type = "CR2")
@@ -385,23 +380,23 @@ rename_coefs <- function(m_list) {
       if (length(x$coefficients) == 3) {
         names(x$coefficients) <- c("Intercept", "Response burden", "Time-trend")
       } else {
-        names(x$coefficients) <- c("Response burden", "Yes, yes", "Yes, no", "No, no", "No, yes", "Time-trend")
+        names(x$coefficients)[c(1, 6)] <- c("Response burden", "Time-trend")
       }
       x
     })
   return(m_list_)
 }
 
-mt2 <- estimator(dat, subset = (dat$yes_yes == 1))
-mt3 <- estimator(dat, subset = (dat$yes_no == 1))
-mt4 <- estimator(dat, subset = (dat$no_no == 1))
-mt5 <- estimator(dat, subset = (dat$no_yes == 1))
+mt2 <- estimator(dat, subset = (dat$RxI == 1))
+mt3 <- estimator(dat, subset = (dat$RxNI == 1))
+mt4 <- estimator(dat, subset = (dat$NRxI == 1))
+mt5 <- estimator(dat, subset = (dat$NRxNI == 1))
 
 m_time <- list(Pooled = mt,
-               `Yes, yes` = mt2,
-               `Yes, no`= mt3,
-               `No, no` = mt4,
-               `No, yes` = mt5)
+               `RxI` = mt2,
+               `RxNI`= mt3,
+               `NRxI` = mt4,
+               `NRxNI` = mt5)
 
 m_time <- rename_coefs(m_time)  # helper to rename coefs for output
 

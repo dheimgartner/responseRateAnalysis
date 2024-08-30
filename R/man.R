@@ -28,9 +28,10 @@
 #' \item{refusal_rate}{Not really clear... (?)}
 #' \item{non_contacts}{Not really clear... What's the difference to n_invalid? (?)}
 #' \item{other}{Any other reasons for not participating.}
-#' \item{flag_yes_no}{Recruitment yes, incentive no.}
-#' \item{flag_yes_yes}{Recruitment yes, incentive yes.}
-#' \item{flag_no_no}{Recruitment no, incentive no.}
+#' \item{RxI}{Recruited, with incentive.}
+#' \item{RxNI}{Recruited, without incentive.}
+#' \item{NRxNI}{Not recruited, without incentive.}
+#' \item{NRxI}{Not recruited, with incentive}
 #' \item{...}{Check with kwa and/or Basil.}
 #' }
 "response_rates"

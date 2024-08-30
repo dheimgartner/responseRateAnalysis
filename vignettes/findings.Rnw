@@ -115,7 +115,8 @@ knitr::opts_chunk$set(
   prompt = TRUE,
   comment = NA,
   highlight = TRUE,
-  fig.align = "center"
+  fig.align = "center",
+  dev = c("pdf", "jpeg")
 )
 knitr::knit_theme$set("greyscale0")
 options(knitr.kable.NA = "")

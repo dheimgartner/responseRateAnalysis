@@ -134,8 +134,12 @@ my_colors <- c("aquamarine3", "darkorange", "blue4", "darkgrey")
 
 convert_flag <- function(x) {
   flag <- stringr::str_remove(x, "flag_")
-  flag. <- stringr::str_replace_all(flag, "_", ", ")
-  stringr::str_to_title(flag.)
+  flag. <- stringr::str_replace_all(flag, "^yes", "R")
+  flag.. <- stringr::str_replace_all(flag., "^no", "NR")
+  flag... <- stringr::str_replace_all(flag.., "yes$", "I")
+  flag.... <- stringr::str_replace_all(flag..., "no$", "NI")
+  flag..... <- stringr::str_replace_all(flag...., "_", "x")
+  flag.....
 }
 @
 

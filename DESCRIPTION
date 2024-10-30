@@ -2,7 +2,7 @@ Package: responseRateAnalysis
 Title: A collective effort towards understanding response rates
 Version: 0.0.0.9003
 Authors@R: 
-    person("Daniel", "Heimgartner", , "daniel.heimgartner@ivt.baug.ethz.ch", role = c("aut", "cre"),
+    person("Daniel", "Heimgartner", , "daniel.heimgartner@ivt.baug.ethz.ch", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-0643-8690"))
 Description: Organizes response burden score data collection and the analysis.
 License: MIT + file LICENSE

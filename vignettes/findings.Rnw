@@ -5,7 +5,6 @@
 
 % \VignetteIndexEntry{findings}
 % \VignettePackage{responseRateAnalysis}
-% \VignetteDepends{tidyverse, patchwork, kableExtra}
 % \VignetteEngine{knitr::knitr}
 % \VignetteEncoding{UTF-8}
 

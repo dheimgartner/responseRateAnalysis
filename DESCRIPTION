@@ -8,20 +8,19 @@ Description: Organizes response burden score data collection and the analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
 Depends: 
     R (>= 2.10)
 LazyData: true
 Suggests: 
     knitr,
-    rmarkdown
+    kableExtra,
+    rmarkdown,
+    tidyverse,
+    patchwork
 VignetteBuilder: knitr
 Imports: 
     clubSandwich,
     lmtest,
     magrittr,
-    sandwich,
-    stringr,
-    texreg,
-    tidyr,
-    tidyselect
+    texreg
+RoxygenNote: 7.3.2

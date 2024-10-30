@@ -30,7 +30,7 @@ add_clustered <- function(fit, cluster, type) {
 extract.clustered <- function(model) {
   tmp <- model
   class(tmp) <- "lm"
-  tr <- texreg:::extract(tmp)
+  tr <- texreg::extract(tmp)
   tr@pvalues <- unname(model$clustered_p)
   tr@se <- unname(model$clustered_se)
 

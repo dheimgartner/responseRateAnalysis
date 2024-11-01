@@ -11,10 +11,8 @@ knitr::opts_knit$set(self.contained=FALSE)
 rr <-
   response_rates %>%
   select(year, survey_content, sample_size, response_burden_score, response_rate)
-
 names(rr) <- c("Year", "Study", "Sample size", "Burden score",
                "Response rate [%]")
-
 tex <- kableExtra::kbl(rr, format = "latex",
                        caption = "Updated response burden scores",
                        label = "full_sample", digits = 0,

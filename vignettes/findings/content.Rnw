@@ -8,7 +8,7 @@ knitr::opts_knit$set(self.contained=FALSE)
 % ABSTRACT
 %%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-We investigate the relation between a survey's response burden and response rate, differentiating recruitment efforts and incentives paid. The results indicate that the effect of response burden is more negative than previously expected. Recruitment shifts the response curve upwards, while incentives flatten it. Surveys beyond 2`000 points appear overly burdensome, sustaining high response rates only through recruitment coupled with incentives. Without incentives, the level effect of recruitment quickly vanishes. Contrary to previous findings, we can not identify a negative time-trend. The data, functions and workflow underlying this analysis are organized as an \rlan-package to foster a collective effort towards understanding response rates.
+We investigate the relation between a survey's response burden and response rate, differentiating recruitment efforts and incentives paid. The results indicate that the effect of response burden is more negative than previously expected. Recruitment shifts the response curve upwards, while incentives flatten it. Surveys beyond 2`000 points appear overly burdensome, sustaining high response rates only through recruitment coupled with incentives. Without incentives, the level effect of recruitment quickly vanishes. Contrary to previous findings, we cannot identify a negative time-trend. The data, functions and workflow underlying this analysis are organized as an \rlan-package to foster a collective effort towards understanding response rates.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -22,9 +22,9 @@ We investigate the relation between a survey's response burden and response rate
 %%%%%%%%%%%%%%%%%%%%
 \section{Questions}
 
-Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes might therefore be encouraged to also contribute. This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful students left not until the final response burden score of their surveys was counted. Thanks to them, we feel that the time is right to update response rates results once again.
+Counting \textit{response burden scores} \citep{schmid2019predicting} is not a very popular task at the Institute for Transport Planning and Systems (IVT, ETH Zurich). One or the other former PhD student got away without reporting them. However, the collective effort over the years yielded a unique dataset allowing us to understand response rates as a function of recruitment efforts and incentives. Other research institutes might therefore be encouraged to also contribute. This paper briefly elaborates the methodology once again and introduces the \responseRateAnalysis~\rlan-package (\url{https://github.com/dheimgartner/responseRateAnalysis}) with its helper functions to easily replicate the results. Since the last update \citep{axhausen2019predicting} a handful of students left not until the final response burden score of their surveys was counted. Thanks to them, we feel that the time is right to update response rates results once again.
 
-The main purpose of this paper is to replicate the analysis, update the estimates based on the enlarged sample and to make the analysis easily replicable: The \rlan-package can be installed as explained below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on github so that we or they can predict response rates from time to time again.
+The main purpose of this paper is to replicate the analysis, update the estimates based on the enlarged sample and to make the analysis easily replicable: The \rlan-package can be installed as explained below but we hope that other research groups rather clone the repository and contribute with their scored survey instruments according to the guidelines outlined on GitHub so that we or they can predict response rates from time to time again.
 
 <<eval=FALSE>>=
 devtools::install_github("dheimgartner/responseRateAnalyis")
@@ -56,9 +56,9 @@ tex <-
 tex
 @
 
-In comparison to the previous publication \citep{schmid2019predicting}, 14 additional surveys were added by IVT members. A new category (no recruitment but with incentive payments) can now be distinguished. However, only five studies fall in this category. The current state of the database is attached to the package \code{response\_rates} and its variables documented (\code{?response\_rates}). The full sample underlying this report can be found in \cref{tab:full_sample}.
+In comparison to the previous publication \citep{schmid2019predicting}, 14 additional surveys have been added by IVT members. \textit{Recruitment} means that the respondents were contacted prior to the survey and they agreed to participate. \textit{Incentives} mean any form of stimulus to motivate respondents to participate (usually a monetary payment upon completion of the survey). Unfortunately, the form and level of the incentive have not been recorded. A new category (no recruitment but with incentive payments) can now be distinguished. However, only five studies fall in this category. The current state of the database is attached to the package \code{response\_rates} and its variables documented (\code{?response\_rates}). The full sample underlying this report can be found in \cref{tab:full_sample}.
 
-The distribution of the response burden scores (RBS) for the four recruitment (R) and incentive (I) categories are visualized in \cref{fig:response_burden_scores}. The following abbreviations are used throughout the text: For example, \textit{RxI} stands for the category where respondents were recruited as well as incentives paid. An \textit{N} negates and hence as an example \textit{NRxNI} reflects the category without recruitment and incentives. The median RBS is 399 and surveys with a score higher than 1`500 are rare (twelve points roughly correspond to a one-minute response time).
+The distribution of the response burden scores (RBS) for the four recruitment (R) and incentive (I) categories are visualized in \cref{fig:response_burden_scores}. The following abbreviations are used throughout the text: For example, \textit{RxI} stands for the category where respondents were recruited as well as incentives paid. An \textit{N} negates; hence as an example, \textit{NRxNI} reflects the category without recruitment and without incentives (i.e., participants were not contacted prior to the survey administration and were not promised any form of incentive upon completion). The median RBS is 399 and surveys with a score higher than 1`500 are rare (twelve points roughly correspond to a one-minute response time).
 
 \begin{figure}
 <<response burden score, echo=FALSE, fig.width=3.75, fig.height=3.9, out.width='50%'>>=
@@ -77,7 +77,7 @@ boxplot(response_burden_score ~ name, data = rr,
         cex.lab = 0.7, cex.axis = 0.7)
 mtext(group_counts, side = 3, at = 1:4, cex = 0.7)
 @
-\caption{Distribution of the response burden scores for \textit{recruitment x intentive} categories. \textit{RxI} stands for recruited, with incentives, \textit{N} negates.}
+\caption{Distribution of the response burden scores for \textit{recruitment x incentive} categories. \textit{RxI} stands for recruited, with incentives, \textit{N} negates.}
 \label{fig:response_burden_scores}
 \end{figure}
 
@@ -105,11 +105,6 @@ The basic workflow is as follows:
 \item Add clustered standard errors with \code{add\_clustered()} which uses the \pkg{clubSandwich} \citep{clubsandwich} and \pkg{lmtest} package \citep{lmtest} under the hood to correct standard errors and related statistics.
 \item The functions from the \pkg{texreg} \citep{texreg} package (e.g., \code{screenreg()} or \code{texreg()}) work together with the class \code{"clustered" "lm"} (as returned by \code{add\_clustered()}) and produce regression tables (such as the ones reported here).
 \end{enumerate}
-
-%%%%%%%%%%%%%%%%%%%%
-% FINDINGS
-%%%%%%%%%%%%%%%%%%%%
-\section{Findings}
 
 The following code conducts the analysis for the full sample (i.e., same slope but different intercepts for the \textit{recruitment x incentive} categories):
 
@@ -191,6 +186,12 @@ tex <- texreg::texreg(m_both,
                       scalebox = 0.75,
                       float.pos = "h!")
 @
+
+
+%%%%%%%%%%%%%%%%%%%%
+% FINDINGS
+%%%%%%%%%%%%%%%%%%%%
+\section{Findings}
 
 <<echo=FALSE, results='asis'>>=
 tex
@@ -360,14 +361,12 @@ Similar to \citet{schmid2019predicting}, we can add a linear time-trend with the
 
 <<results='hide'>>=
 dat$year <- dat$year - 2004
-
 fit_t <- fit_t <- lm(y ~ 0 + x + RxI + RxNI + NRxI + NRxNI + year,
                      data = dat, weights = weight)
-
 mt <- add_clustered(fit_t, cluster = dat$survey_id, type = "CR2")
 @
 
-We repeat the steps for the individual categories and synthesise the results in a table (\cref{tab:time_trend}). In contrast to \citet{schmid2019predicting} we do not find a negative time-trend and therefore do not support the hypothesis of a general fatigue and less willingness to participate in our surveys.
+We repeat the steps for the individual categories and synthesise the results in \cref{tab:time_trend}. In contrast to \citet{schmid2019predicting} we do not find a negative time-trend and therefore do not support the hypothesis of a general fatigue and less willingness to participate in our surveys.
 
 <<echo=FALSE, results='hide'>>=
 estimator <- function(dat, subset) {

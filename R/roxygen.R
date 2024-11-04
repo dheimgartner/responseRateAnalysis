@@ -1,4 +1,21 @@
-## see here for documentation example: https://github.com/tidyverse/nycflights13/blob/main/R/flights.R
+## Sources from DESCRIPTION
+#' @name responseRateAnalysis-package
+"_PACKAGE"
+
+
+## Imports
+
+#' @importFrom methods setMethod
+NULL
+
+#' @importFrom texreg extract
+NULL
+
+#' @importFrom stats AIC BIC logLik
+NULL
+
+
+## Data
 
 #' Response rates data
 #'
@@ -35,3 +52,16 @@
 #' \item{...}{Check with kwa and/or Basil.}
 #' }
 "response_rates"
+
+#' Response burden scheme
+#'
+#' Elaborates on how to score different question items.
+#'
+#' @format Data frame with columns
+#' \describe{
+#' \item{Item}{Question item/type.}
+#' \item{Points}{Response burden score.}
+#' }
+"response_burden_scheme"
+
+

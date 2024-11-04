@@ -26,7 +26,6 @@ add_clustered <- function(fit, cluster, type) {
   fit
 }
 
-#' @importFrom texreg extract
 extract.clustered <- function(model) {
   tmp <- model
   class(tmp) <- "lm"
@@ -47,9 +46,34 @@ extract.clustered <- function(model) {
   tr
 }
 
-setMethod("extract", signature = className("clustered", "responseRateAnalysis"),
-          definition = extract.clustered)
+#' Extract Method for Clustered Response Rate Analysis Fits
+#'
+#' This is the main method called when using functions from the `texreg-package`.
+#'
+#' @rdname extract.clustered
+#' @aliases extract.clustered
+#'
+#' @param model an object of class `"clustered", "responseRateAnalysis"`.
+#'
+#' @return A `texreg-class` object representing the statistical model
+#' @method extract clustered
+#'
+#' @seealso `texreg-package`, [`texreg::texreg`], [`texreg::screenreg`] and related functions.
+#'
+#' @details
+#' The `extract` method is called internally. Higher-level functions from the
+#' `texreg-package` pass arguments via `...` to `extract`.
+methods::setMethod("extract", signature = className("clustered", "responseRateAnalysis"),
+                   definition = extract.clustered)
 
+#' Summarizing Clustered Response Rate Analysis Objects
+#'
+#' Wrapper around [`texreg::screenreg`].
+#'
+#' @param object an object of class `"clustered", "responseRateAnalysis"`.
+#' @param ... further arguments passed to or from other methods.
+#'
+#' @return Called for side-effect.
 #' @export
 summary.clustered <- function(object, ...) {
   texreg::screenreg(object)

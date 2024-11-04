@@ -1,3 +1,10 @@
+#' Loads and Prepares the Data for Estimation
+#'
+#' Loads and prepares the [`response_rates`] data for estimation. It selects the
+#' input variables, computes the weights, rescales the responsee burden score and
+#' log transforms the response rate.
+#'
+#' @return Data frame
 #' @export
 default_data <- function() {
   keep <- c(
@@ -5,12 +12,14 @@ default_data <- function() {
     "sample_size", "RxI", "RxNI", "NRxNI", "NRxI"
   )
   rr <- responseRateAnalysis::response_rates[, keep]
-  X <-
-    rr %>%
-    dplyr::mutate(y = log(response_rate / (100 - response_rate)),
-                  x = response_burden_score / 1000) %>%
-    dplyr::mutate(dplyr::across(c(RxI, RxNI, NRxNI, NRxI), function(x) as.numeric(x)),
-                  weight = sqrt(sample_size)) %>%
-    dplyr::select(y, x, weight, all_of(keep))
-  X
+  X <- rr
+  X$y <- with(rr, log(response_rate / (100 - response_rate)))
+  X$x <- with(rr, response_burden_score / 1000)
+  X$weight <- sqrt(rr$sample_size)
+  X$RxI <- as.numeric(rr$RxI)
+  X$RxNI <- as.numeric(rr$RxNI)
+  X$NRxNI <- as.numeric(rr$NRxNI)
+  X$NRxI <- as.numeric(rr$NRxI)
+
+  X[, c("y", "x", "weight", keep)]
 }

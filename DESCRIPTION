@@ -22,5 +22,6 @@ Imports:
     clubSandwich,
     lmtest,
     magrittr,
+    methods,
     texreg
 RoxygenNote: 7.3.2

@@ -61,7 +61,7 @@ In comparison to the previous publication \citep{schmid2019predicting}, 14 addit
 The distribution of the response burden scores (RBS) for the four recruitment (R) and incentive (I) categories are visualized in \cref{fig:response_burden_scores}. The following abbreviations are used throughout the text: For example, \textit{RxI} stands for the category where respondents were recruited as well as incentives paid. An \textit{N} negates; hence as an example, \textit{NRxNI} reflects the category without recruitment and without incentives (i.e., participants were not contacted prior to the survey administration and were not promised any form of incentive upon completion). The median RBS is 399 and surveys with a score higher than 1`500 are rare (twelve points roughly correspond to a one-minute response time).
 
 \begin{figure}
-<<response burden score, echo=FALSE, fig.width=3.75, fig.height=3.9, out.width='50%'>>=
+<<response burden score, echo=FALSE, fig.width=3.75, fig.height=3.9, out.width='50%', dpi=300>>=
 rr <-
   response_rates %>%
   select(response_burden_score, response_rate, all_of(cat_cols)) %>%
@@ -242,7 +242,7 @@ tex
 @
 
 \begin{figure}
-<<response curve, echo=FALSE, message=FALSE, fig.width=8, fig.height=3.8>>=
+<<response curve, echo=FALSE, message=FALSE, fig.width=8, fig.height=3.8, dpi=300>>=
 new_x <- seq(min(dat$x), max(dat$x), by = 0.01)
 newdata <- data.frame(x = new_x)
 
